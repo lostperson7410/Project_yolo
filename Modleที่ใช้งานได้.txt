@@ -1,0 +1,15 @@
+X // เพิ่มคมแล้ว
+yol.o3
+Y
+FIXLPS
+FIX LSPV2 // หาขอบของรถได้แล้วมี4เหลี่ยมหาทะเบียนวิ่งตลอด
+
+
+/////////////////////////ต่อจากX//////////////////////////////
+// เพิ่มคมแล้ว
+
+idea เอาXไปใส่ในyolo เชื่อมตัวแปร แทนไปเลยไม่ต้องฝช้cv2.imread()ไห้ใช้ img car = findlicence img.
+
+
+
+https://colab.research.google.com/github/gnoparus/bualabs/blob/master/nbs/27a_pythainlp_thai_character_date_number_money.ipynb
