@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 import imutils
 
 
-####
+######
  
 cap = cv.VideoCapture("car.mp4")
 whT = 320
