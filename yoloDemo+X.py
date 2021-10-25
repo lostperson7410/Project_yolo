@@ -1,7 +1,8 @@
 import cv2 as cv
-from cv2 import data
+from cv2 import data, resize
 import numpy as np
-
+import glob
+import random
 #####
 import pytesseract as tess
 tess.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -32,6 +33,9 @@ modelWeights = "yolov3-tiny.weights"
 net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
+ 
+
+
  
 def findObjects(outputs,img,id):
     hT, wT, cT = img.shape
@@ -74,6 +78,7 @@ def findObjects(outputs,img,id):
             cv.imshow('crop',crop_img)
             findlicenesPlates(crop_img)
             
+            
 def findlicenesPlates(img):
     
     ##lsp##
@@ -94,9 +99,89 @@ def findlicenesPlates(img):
 
     
     imgRoi=img[y:y+h,x:x+w]
+    ###resize
+    scale_percent = 50
+    width = int(imgRoi.shape[1] * scale_percent / 100)
+    height = int(imgRoi.shape[0] * scale_percent / 100)
+    dsize = (width, height)
+    resizeimg = cv.resize(imgRoi,dsize)
     plt.imshow(imgRoi,cmap = 'gray')
-    cv.imshow('Shapened',imgRoi)
-    cv.imwrite("data/pic"+str(id)+".jpg",imgRoi)
+    cv.imshow('Roi',resizeimg)
+    ##add kernel shapened######
+    kernel = np.array([[-1,-1,-1], 
+                       [-1, 9,-1],
+                       [-1,-1,-1]])
+    sharpened = cv.filter2D(resizeimg, -1, kernel)
+    cv.imwrite("data/flp"+str(id)+".jpg",sharpened)
+
+def checkPlate(id):
+    # Load Yolo
+    net = cv.dnn.readNet("yolov3_training_last.weights", "yolov3_testing.cfg")
+    # Name custom object
+    classes = ["license plate"]
+
+    # Images path
+    images_path = glob.glob(r"G:\ProjectI\Yolo\Project_yolo\data\*.jpg")
+
+    layer_names = net.getLayerNames()
+    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    colors = np.random.uniform(0, 255, size=(len(classes), 3))
+
+    # Insert here the path of your images
+    random.shuffle(images_path)
+    # loop through all the images
+    for img_path in images_path:
+        # Loading image
+        img = cv.imread(img_path)
+        img = cv.resize(img, None, fx=0.4, fy=0.4)
+        height, width, channels = img.shape
+
+        # Detecting objects
+        blob = cv.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+
+        net.setInput(blob)
+        outs = net.forward(output_layers)
+
+        # Showing informations on the screen
+        class_ids = []
+        confidences = []
+        boxes = []
+        for out in outs:
+            for detection in out:
+                scores = detection[5:]
+                class_id = np.argmax(scores)
+                confidence = scores[class_id]
+                if confidence > 0.3:
+                    # Object detected
+                    print(class_id)
+                    center_x = int(detection[0] * width)
+                    center_y = int(detection[1] * height)
+                    w = int(detection[2] * width)
+                    h = int(detection[3] * height)
+
+                    # Rectangle coordinates
+                    x = int(center_x - w / 2)
+                    y = int(center_y - h / 2)
+
+                    boxes.append([x, y, w, h])
+                    confidences.append(float(confidence))
+                    class_ids.append(class_id)
+
+        indexes = cv.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
+        print(indexes)
+        font = cv.FONT_HERSHEY_PLAIN
+        for i in range(len(boxes)):
+            if i in indexes:
+                x, y, w, h = boxes[i]
+                label = str(classes[class_ids[i]])
+                color = colors[class_ids[i]]
+                cv.rectangle(img, (x, y), (x + w, y + h), color, 2)
+                cv.putText(img, label, (x, y + 30), font, 3, color, 2)
+        
+        cv.imwrite("data/check"+str(id)+".jpg",img)
+        id = id+1
+
+        cv.imshow("Check", img)
 
 
 while True:
@@ -109,8 +194,9 @@ while True:
     outputs = net.forward(outputNames)
     findObjects(outputs,img,id)
     id = id+1
- 
     cv.imshow('Image', img)
+    #checkPlate(id)
+
     cv.waitKey(1)
 
 ####################XcodeX#################
