@@ -76,43 +76,8 @@ def findObjects(outputs,img,id):
             
             crop_img = img[y:y+h,x:x+w]
             cv.imshow('crop',crop_img)
-            findlicenesPlates(crop_img)
             
             
-def findlicenesPlates(img):
-    
-    ##lsp##
-
-    imgGray = cv.cvtColor(img,cv.COLOR_BGR2GRAY)
-    thresh = cv.adaptiveThreshold(imgGray,255,cv.ADAPTIVE_THRESH_GAUSSIAN_C, cv.THRESH_BINARY,11,2)
-    contours,h = cv.findContours(thresh,1,2)
-    largest_rectangle = [0,0]
-
-    for cnt in contours:
-        approx = cv.approxPolyDP(cnt,0.018*cv.arcLength(cnt,True),True)
-        if len(approx)==4:
-            area = cv.contourArea(cnt)
-            if area > largest_rectangle[0]:
-                largest_rectangle = [cv.contourArea(cnt), cnt, approx]
-
-    x,y,w,h = cv.boundingRect(largest_rectangle[1])
-
-    
-    imgRoi=img[y:y+h,x:x+w]
-    ###resize
-    scale_percent = 50
-    width = int(imgRoi.shape[1] * scale_percent / 100)
-    height = int(imgRoi.shape[0] * scale_percent / 100)
-    dsize = (width, height)
-    resizeimg = cv.resize(imgRoi,dsize)
-    plt.imshow(imgRoi,cmap = 'gray')
-    cv.imshow('Roi',resizeimg)
-    ##add kernel shapened######
-    kernel = np.array([[-1,-1,-1], 
-                       [-1, 9,-1],
-                       [-1,-1,-1]])
-    sharpened = cv.filter2D(resizeimg, -1, kernel)
-    cv.imwrite("data/flp"+str(id)+".jpg",sharpened)
 
 def checkPlate(id):
     # Load Yolo
@@ -121,7 +86,7 @@ def checkPlate(id):
     classes = ["license plate"]
 
     # Images path
-    images_path = glob.glob(r"G:\ProjectI\Yolo\Project_yolo\data\*.jpg")
+    images_path = glob.glob(r"C:\Users\Apinun\Documents\GitHub\Project_yolo\data\*.jpg")
 
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
@@ -151,7 +116,7 @@ def checkPlate(id):
                 scores = detection[5:]
                 class_id = np.argmax(scores)
                 confidence = scores[class_id]
-                if confidence > 0.3:
+                if confidence > 0.5:
                     # Object detected
                     print(class_id)
                     center_x = int(detection[0] * width)
@@ -168,21 +133,38 @@ def checkPlate(id):
                     class_ids.append(class_id)
 
         indexes = cv.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
-        print(indexes)
+        #Wprint(indexes)
         font = cv.FONT_HERSHEY_PLAIN
-        for i in range(len(boxes)):
-            if i in indexes:
-                x, y, w, h = boxes[i]
-                label = str(classes[class_ids[i]])
-                color = colors[class_ids[i]]
-                cv.rectangle(img, (x, y), (x + w, y + h), color, 2)
-                cv.putText(img, label, (x, y + 30), font, 3, color, 2)
-        
-        cv.imwrite("data/check"+str(id)+".jpg",img)
-        id = id+1
+        if class_ids == [0]:
 
-        cv.imshow("Check", img)
+            for i in range(len(boxes)):
+                if i in indexes:
+                    x, y, w, h = boxes[i]
+                    label = str(classes[class_ids[i]])
+                    color = colors[class_ids[i]]
+                    cv.rectangle(img, (x, y), (x + w, y + h), color, 2)
+                    cv.putText(img, label, (x, y + 30), font, 3, color, 2)
+                    if class_ids == [0]:
 
+                        lsImg = img[y:y+h,x:x+w]
+                        cv.imwrite("data/check"+str(id)+".jpg",lsImg)
+                        id = id+1        
+                        cv.imshow("Check", lsImg)
+
+    ###resize
+    #scale_percent = 50
+    #width = int(imgRoi.shape[1] * scale_percent / 100)
+    #height = int(imgRoi.shape[0] * scale_percent / 100)
+    #dsize = (width, height)
+    #resizeimg = cv.resize(imgRoi,dsize)
+    #plt.imshow(imgRoi,cmap = 'gray')
+    #cv.imshow('Roi',resizeimg)
+    ##add kernel shapened######
+    #kernel = np.array([[-1,-1,-1], 
+     #                  [-1, 9,-1],
+      #                 [-1,-1,-1]])
+    #sharpened = cv.filter2D(resizeimg, -1, kernel)
+    #cv.imwrite("data/flp"+str(id)+".jpg",sharpened)
 
 while True:
     success, img = cap.read()
@@ -195,7 +177,7 @@ while True:
     findObjects(outputs,img,id)
     id = id+1
     cv.imshow('Image', img)
-    #checkPlate(id)
+    checkPlate(id)
 
     cv.waitKey(1)
 

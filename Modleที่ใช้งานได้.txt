@@ -9,4 +9,6 @@ idea เอาXไปใส่ในyolo เชื่อมตัวแปร �
 
 
 
+http://ise.ait.ac.th/wp-content/uploads/sites/57/2020/12/Thai-Digit-Recognition-on-License-Plates-using-YoloV3.pdf
+
 https://colab.research.google.com/github/gnoparus/bualabs/blob/master/nbs/27a_pythainlp_thai_character_date_number_money.ipynb
