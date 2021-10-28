@@ -6,7 +6,7 @@ Yolo +เพิ่มคม+ตัวกรองว่าเป็นป้า�
 // เพิ่มคมแล้ว
 
 idea เอาXไปใส่ในyolo เชื่อมตัวแปร แทนไปเลยไม่ต้องฝช้cv2.imread()ไห้ใช้ img car = findlicence img.
-
+https://viso.ai/deep-learning/yolov3-overview/ // อ่านก่อนใช้Yolo
 
 
 http://ise.ait.ac.th/wp-content/uploads/sites/57/2020/12/Thai-Digit-Recognition-on-License-Plates-using-YoloV3.pdf
