@@ -12,3 +12,17 @@ https://viso.ai/deep-learning/yolov3-overview/ // อ่านก่อนใช
 http://ise.ait.ac.th/wp-content/uploads/sites/57/2020/12/Thai-Digit-Recognition-on-License-Plates-using-YoloV3.pdf
 
 https://colab.research.google.com/github/gnoparus/bualabs/blob/master/nbs/27a_pythainlp_thai_character_date_number_money.ipynb
+
+
+
+//compare img////////////////////////////////
+https://datawow.io/blogs/perceptual-hashing--python ///hashing
+////หาของในภาพกัน-python-opencv////
+https://medium.com/lazy-dev/%E0%B8%AB%E0%B8%B2%E0%B8%82%E0%B8%AD%E0%B8%87%E0%B9%83%E0%B8%99%E0%B8%A0%E0%B8%B2%E0%B8%9E%E0%B8%81%E0%B8%B1%E0%B8%99-python-opencv-8691e6aaf97c
+
+
+///reinstall////////////////
+
+
+pip install opencv-contrib-python==3.4.13.47 --force-reinstall
+ pip install darknet

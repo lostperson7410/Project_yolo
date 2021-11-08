@@ -12,7 +12,7 @@ import imutils
 
 ######
  
-cap = cv.VideoCapture("car.mp4")
+cap = cv.VideoCapture("Car.mp4")
 whT = 320
 confThreshold =0.5
 nmsThreshold= 0.2
@@ -26,7 +26,7 @@ classesFile = "coco.names"
 classNames = []
 with open(classesFile, 'rt') as f:
     classNames = f.read().rstrip('\n').split('\n')
-print(classNames)
+#print(classNames)
 ## Model Files
 modelConfiguration = "yolov3-tiny.cfg"
 modelWeights = "yolov3-tiny.weights"
@@ -34,8 +34,6 @@ net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
  
-
-
  
 def findObjects(outputs,img,id):
     hT, wT, cT = img.shape
@@ -70,7 +68,7 @@ def findObjects(outputs,img,id):
                 crop = img[y:y+h,x:x+w]
 
                 ####Wirtecrop###
-                cv.imwrite("data/pic"+str(id)+".jpg",crop)
+                cv.imwrite("data/"+str(id)+".jpg",crop)
                 id = id+1
                 cv.imshow('crop',crop)
             
@@ -79,7 +77,7 @@ def findObjects(outputs,img,id):
             
             
 
-def checkPlate(id):
+def checkPlate(id,img):
     # Load Yolo
     net = cv.dnn.readNet("yolov3_training_last.weights", "yolov3_testing.cfg")
     # Name custom object
@@ -177,7 +175,7 @@ while True:
     findObjects(outputs,img,id)
     id = id+1
     cv.imshow('Image', img)
-    checkPlate(id)
+    checkPlate(id,img)
 
     cv.waitKey(1)
 
