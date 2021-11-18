@@ -10,8 +10,16 @@ import imutils
 
 
 ######
- 
-cap = cv.VideoCapture("Car.mp4")
+
+from PIL import Image
+import imagehash
+import hashlib
+
+from numpy.lib.function_base import average
+
+
+
+cap = cv.VideoCapture("CarOne.mp4")
 whT = 320
 confThreshold =0.5
 nmsThreshold= 0.2
@@ -69,6 +77,31 @@ net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
             #crop_img = img[y:y+h,x:x+w]
             #cv.imshow('crop',crop_img)
             
+
+def hash(img):
+    image = Image.fromarray(img)
+    image = image.convert("RGB")
+    image.save('./data/test_test.jpg')
+    image_file = Image.open('./data/test_test.jpg')
+    phashONE = imagehash.phash(image_file)
+    print(phashONE)
+    a = str(phashONE)
+
+    image_file = Image.open('./data/check144.jpg')
+    phashTWO = imagehash.phash(image_file)
+    print(phashTWO)
+    b = str(phashTWO)
+
+
+    gs_hash = imagehash.hex_to_hash(a)
+    ori_hash = imagehash.hex_to_hash(b)
+    avg_hash = gs_hash - ori_hash
+    print('Hamming distance:', gs_hash - ori_hash)
+
+
+    if avg_hash <= 22 :
+        print('image is similar')
+    else : print('image is identical')
 
 def checkPlate(outs,img,id):
     
@@ -152,6 +185,7 @@ while True:
     output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
     outs = net.forward(output_layers)
     checkPlate(outs,img,id)
+    hash(img)
     id = id+1
     cv.imshow('Image', img)
     

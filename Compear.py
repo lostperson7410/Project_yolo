@@ -5,8 +5,8 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 from skimage import color, data
 MIN_MATCH_COUNT = 5
-img1 = cv2.imread('./data/check219.jpg', 0)
-img2 = cv2.imread('./data/check127.jpg', 0)
+img1 = cv2.imread('./data/check143.jpg', 0)
+img2 = cv2.imread('./data/check144.jpg', 0)
 # Initiate SIFT detector
 sift = cv2.xfeatures2d.SIFT_create()
 # find the keypoints and descriptors with SIFT
