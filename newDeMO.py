@@ -87,7 +87,7 @@ def hash(img):
     print(phashONE)
     a = str(phashONE)
 
-    image_file = Image.open('./data/pic331.jpg')
+    image_file = Image.open('./data/pic44.jpg')
     phashTWO = imagehash.phash(image_file)
     print(phashTWO)
     b = str(phashTWO)
@@ -186,7 +186,7 @@ while True:
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
     outs = net.forward(output_layers)
-    #findObjects(outs,img,id)
+    findObjects(outs,img,id)
     checkPlate(outs,img,id)
     id = id+1
     cv.imshow('Image', img)
