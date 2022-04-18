@@ -1,3 +1,4 @@
+from time import sleep
 import cv2 as cv
 from cv2 import data, resize
 import numpy as np
@@ -8,7 +9,8 @@ import pytesseract as tess
 import matplotlib.pyplot as plt
 import imutils
 
-
+######CvZONE
+from cvzone.SerialModule import SerialObject
 ######
 
 from PIL import Image
@@ -18,7 +20,9 @@ import hashlib
 from numpy.lib.function_base import average
 
 
-
+# Arduino
+arduino = SerialObject('COM3')
+# 
 cap = cv.VideoCapture("CarThree.mp4")
 whT = 320
 confThreshold =0.5
@@ -31,7 +35,7 @@ id = 0
 classes = ["license plate"]
 ## Model Files
 modelConfiguration = "yolov3_testing.cfg"
-modelWeights = "yolov3_training_last.weights"
+modelWeights = "yolov3_training_V1.weights"
 net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
@@ -70,7 +74,7 @@ def findObjects(outs,img,id):
                 crop = img[y:y+h,x:x+w]
 
                 ####Wirtecrop###
-                cv.imwrite("data/pic"+str(id)+".jpg",crop)
+                # cv.imwrite("data/pic"+str(id)+".jpg",crop)
                 id = id+1
                 cv.imshow('crop',crop)
             
@@ -101,7 +105,12 @@ def hash(img):
 
     if avg_hash <= 25 :
         print('image is similar')
+        arduino.sendData([1])
+        sleep(5)
+        print('FIN-sleep')
     else : print('image is identical')
+    arduino.sendData([0])
+    sleep(3)
 
 def checkPlate(outs,img,id):
     
@@ -159,7 +168,7 @@ def checkPlate(outs,img,id):
                     #text = tess.image_to_string(sharpened, 'tha')
                     #cv.imwrite("data/check"+str(id)+".jpg",sharpened)
                     id = id+1        
-                    cv.imshow("Check", lsImg)
+                    cv.imshow("Check", sharpened)
                     hash(lsImg)
 
 
@@ -186,7 +195,7 @@ while True:
     layer_names = net.getLayerNames()
     output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
     outs = net.forward(output_layers)
-    findObjects(outs,img,id)
+    # findObjects(outs,img,id)
     checkPlate(outs,img,id)
     id = id+1
     cv.imshow('Image', img)

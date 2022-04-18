@@ -12,7 +12,7 @@ import imutils
 
 ######
  
-cap = cv.VideoCapture("CarThree.mp4")
+cap = cv.VideoCapture("p2.mp4")
 whT = 320
 confThreshold =0.5
 nmsThreshold= 0.2
@@ -175,7 +175,7 @@ while True:
     findObjects(outputs,img,id)
     id = id+1
     cv.imshow('Image', img)
-    checkPlate(id,img)
+    # checkPlate(id,img)
 
     cv.waitKey(1)
 
