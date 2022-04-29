@@ -9,7 +9,7 @@ import pytesseract as tess
 import matplotlib.pyplot as plt
 import imutils
 
-######CvZONE
+# CvZONE
 from cvzone.SerialModule import SerialObject
 ######
 
@@ -22,65 +22,66 @@ from numpy.lib.function_base import average
 
 # Arduino
 arduino = SerialObject('COM3')
-# 
+#
 cap = cv.VideoCapture("CarThree.mp4")
 whT = 320
-confThreshold =0.5
-nmsThreshold= 0.2
+confThreshold = 0.5
+nmsThreshold = 0.2
 
 id = 0
 
 
-#### LOAD MODEL
+# LOAD MODEL
 classes = ["license plate"]
-## Model Files
+# Model Files
 modelConfiguration = "yolov3_testing.cfg"
-modelWeights = "yolov3_training_V1.weights"
+modelWeights = "yolov3_training_last.weights"
 net = cv.dnn.readNetFromDarknet(modelConfiguration, modelWeights)
 net.setPreferableBackend(cv.dnn.DNN_BACKEND_OPENCV)
 net.setPreferableTarget(cv.dnn.DNN_TARGET_CPU)
- 
 
-def findObjects(outs,img,id):
+
+def findObjects(outs, img, id):
     hT, wT, cT = img.shape
     bbox = []
     classIds = []
     confs = []
-    
+
     for output in outs:
         for det in output:
             scores = det[5:]
             classId = np.argmax(scores)
             confidence = scores[classId]
             if confidence > confThreshold:
-                w,h = int(det[2]*wT) , int(det[3]*hT)
-                x,y = int((det[0]*wT)-w/2) , int((det[1]*hT)-h/2)
-                bbox.append([x,y,w,h])
+                w, h = int(det[2]*wT), int(det[3]*hT)
+                x, y = int((det[0]*wT)-w/2), int((det[1]*hT)-h/2)
+                bbox.append([x, y, w, h])
                 classIds.append(classId)
-                print(classIds) #2car 3motor
+                print(classIds)  # 2car 3motor
                 confs.append(float(confidence))
 
     indices = cv.dnn.NMSBoxes(bbox, confs, confThreshold, nmsThreshold)
-    
+
     if classIds == [2]:
         for i in indices:
             i = i[0]
             box = bbox[i]
             x, y, w, h = box[0], box[1], box[2], box[3]
-            print(x,y,w,h)
-            cv.rectangle(img, (x, y), (x+w,y+h), (255, 0 , 255), 2)
-            cv.putText(img,f'{classNames[classIds[i]].upper()} {int(confs[i]*100)}%',(x, y-10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
+            print(x, y, w, h)
+            cv.rectangle(img, (x, y), (x+w, y+h), (255, 0, 255), 2)
+            cv.putText(img, f'{classNames[classIds[i]].upper()} {int(confs[i]*100)}%',
+                       (x, y-10), cv.FONT_HERSHEY_SIMPLEX, 0.6, (255, 0, 255), 2)
             if classIds == [2]:
-                crop = img[y:y+h,x:x+w]
+                crop = img[y:y+h, x:x+w]
 
                 ####Wirtecrop###
                 # cv.imwrite("data/pic"+str(id)+".jpg",crop)
                 id = id+1
-                cv.imshow('crop',crop)
-            
-            crop_img = img[y:y+h,x:x+w]
-            cv.imshow('crop',crop_img)
-            
+                cv.imshow('crop', crop)
+
+            crop_img = img[y:y+h, x:x+w]
+            cv.imshow('crop', crop_img)
+
 
 def hash(img):
     image = Image.fromarray(img)
@@ -96,26 +97,29 @@ def hash(img):
     print(phashTWO)
     b = str(phashTWO)
 
-
     gs_hash = imagehash.hex_to_hash(a)
     ori_hash = imagehash.hex_to_hash(b)
     avg_hash = gs_hash - ori_hash
     print('Hamming distance:', gs_hash - ori_hash)
 
-
-    if avg_hash <= 25 :
+    if avg_hash <= 25:
         print('image is similar')
         arduino.sendData([1])
-        sleep(5)
-        print('FIN-sleep')
-    else : print('image is identical')
-    arduino.sendData([0])
-    sleep(3)
+        # sleep(5)
+        print('FOR-sleep')
+        # arduino.sendData([2])
+        # sleep(3)
+        # print('RE-sleep')
+    else:
+        print('image is identical')
+        # arduino.sendData([0])
+        # sleep(5)
+        print('NON-sleep')
 
-def checkPlate(outs,img,id):
-    
+
+def checkPlate(outs, img, id):
+
     colors = np.random.uniform(0, 255, size=(len(classes), 3))
-
 
     height, width, channels = img.shape
 
@@ -145,7 +149,7 @@ def checkPlate(outs,img,id):
                 class_ids.append(class_id)
 
     indexes = cv.dnn.NMSBoxes(boxes, confidences, 0.5, 0.4)
-    #Wprint(indexes)
+    # Wprint(indexes)
     font = cv.FONT_HERSHEY_PLAIN
     if class_ids == [0]:
 
@@ -155,51 +159,52 @@ def checkPlate(outs,img,id):
                 label = str(classes[class_ids[i]])
                 color = colors[class_ids[i]]
                 cv.rectangle(img, (x, y), (x + w, y + h), color, 2)
-                cv.putText(img, label, (x, y -30 ), font, 1, color, 2)
+                cv.putText(img, label, (x, y - 30), font, 1, color, 2)
                 if class_ids == [0]:
 
-                    lsImg = img[y:y+h,x:x+w]
-                     #ADD SHAPEN
+                    lsImg = img[y:y+h, x:x+w]
+                    # ADD SHAPEN
                     kernel = np.array(
-                        [[-1,-1,-1],
-                        [-1, 9,-1],
-                        [-1,-1,-1]])
+                        [[-1, -1, -1],
+                         [-1, 9, -1],
+                         [-1, -1, -1]])
                     sharpened = cv.filter2D(lsImg, -1, kernel)
                     #text = tess.image_to_string(sharpened, 'tha')
-                    #cv.imwrite("data/check"+str(id)+".jpg",sharpened)
-                    id = id+1        
+                    # cv.imwrite("data/check"+str(id)+".jpg",sharpened)
+                    id = id+1
                     cv.imshow("Check", sharpened)
                     hash(lsImg)
 
-
-    ###resize
+    # resize
     #scale_percent = 50
     #width = int(imgRoi.shape[1] * scale_percent / 100)
     #height = int(imgRoi.shape[0] * scale_percent / 100)
     #dsize = (width, height)
     #resizeimg = cv.resize(imgRoi,dsize)
     #plt.imshow(imgRoi,cmap = 'gray')
-    #cv.imshow('Roi',resizeimg)
+    # cv.imshow('Roi',resizeimg)
     ##add kernel shapened######
-    #kernel = np.array([[-1,-1,-1], 
+    # kernel = np.array([[-1,-1,-1],
      #                  [-1, 9,-1],
       #                 [-1,-1,-1]])
     #sharpened = cv.filter2D(resizeimg, -1, kernel)
-    #cv.imwrite("data/flp"+str(id)+".jpg",sharpened)
+    # cv.imwrite("data/flp"+str(id)+".jpg",sharpened)
+
 
 while True:
     success, img = cap.read()
 
-    blob = cv.dnn.blobFromImage(img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
+    blob = cv.dnn.blobFromImage(
+        img, 0.00392, (416, 416), (0, 0, 0), True, crop=False)
     net.setInput(blob)
     layer_names = net.getLayerNames()
-    output_layers = [layer_names[i[0] - 1] for i in net.getUnconnectedOutLayers()]
+    output_layers = [layer_names[i[0] - 1]
+                     for i in net.getUnconnectedOutLayers()]
     outs = net.forward(output_layers)
     # findObjects(outs,img,id)
-    checkPlate(outs,img,id)
+    checkPlate(outs, img, id)
     id = id+1
     cv.imshow('Image', img)
-    
 
     cv.waitKey(1)
 
@@ -220,4 +225,3 @@ while True:
 #            imgRoi=img[y:y+h,x:x+w]
 #           plt.imshow(imgRoi,cmap = 'gray')
 #            cv.imshow('Shapened',imgRoi)
-
